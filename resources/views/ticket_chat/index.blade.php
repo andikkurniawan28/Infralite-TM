@@ -29,10 +29,7 @@
                 <p class="mb-0 text-muted">{{ $ticket->description }}</p>
             </div>
 
-            <div class="card-body" id="chat-box" style="max-height: 500px; overflow-y: auto;">
-                <div class="text-muted text-center">Loading chat...</div>
-            </div>
-
+            @if($ticket->ticketStatus->name != 'Closed')
             <div class="card-footer">
                 <form id="chat-form" action="{{ route('ticket_chat.process', $ticket->id) }}" method="POST">
                     @csrf
@@ -42,6 +39,12 @@
                     </div>
                 </form>
             </div>
+            @endif
+
+            <div class="card-body" id="chat-box" style="max-height: 500px; overflow-y: auto;">
+                <div class="text-muted text-center">Loading chat...</div>
+            </div>
+
         </div>
     </div>
 @endsection

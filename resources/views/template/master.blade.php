@@ -4,8 +4,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>InfraLite-TM</title>
-
+    <title>INFRALite-TM</title>
+  <link rel="icon"
+        type="image/png"
+        href="{{ asset('img/1-removebg-preview.png') }}" />
     <!-- Stylesheets -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
@@ -135,8 +137,14 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light glassmorphism shadow-sm">
         <div class="container-fluid">
-            <i class="bi bi-ticket me-1 fs-1"></i>
-            <a class="navbar-brand fw-bold" href="{{ route('welcome') }}">{{ env('APP_NAME') }}</a>
+            {{-- <i class="bi bi-ticket me-1 fs-1"></i> --}}
+            <a class="navbar-brand fw-bold" href="{{ route('welcome') }}">
+                {{-- INFRALite-TM --}}
+                <img src="{{ asset('img/1-removebg-preview-crop.png') }}"
+                    alt="INFRALite-TM"
+                    style="height: 24px; object-fit: contain;">
+                <strong>-TM</strong>
+            </a>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown"
@@ -164,7 +172,7 @@
 
     <!-- Footer -->
     <footer class="footer-white-gradient text-center py-3 mt-auto">
-        <small>&copy; 2025 {{ env('APP_NAME') }}. All rights reserved.</small>
+        <small>&copy; 2025 INFRALite-TM. All rights reserved.</small>
     </footer>
 
     <!-- Scripts -->

@@ -27,13 +27,36 @@ class TicketController extends Controller
                 ->addIndexColumn()
                 ->addColumn('ticketStatus_name', function ($row) {
                     $statusName = $row->ticketStatus->name ?? 'No Status';
-                    return '<a href="' . route('ticket.edit', $row->id) . '" class="btn btn-sm btn-primary">' . $statusName . '</a>';
+
+                    if (strtolower($statusName) === 'closed') {
+                        return '<span class="badge bg-secondary">' . e($statusName) . '</span>';
+                    }
+
+                    return '<a href="' . route('ticket.edit', $row->id) . '" class="btn btn-sm btn-primary">' . e($statusName) . '</a>';
                 })
                 ->addColumn('ticketCategory_name', function ($row) {
                     return $row->ticketCategory->name ?? '-';
                 })
                 ->addColumn('ticketPriorities_name', function ($row) {
-                    return $row->ticketPriorities->name ?? '-';
+                    $name = $row->ticketPriorities->name ?? '-';
+
+                    switch (strtolower($name)) {
+                        case 'urgent':
+                            $color = 'danger'; // merah
+                            break;
+                        case 'high':
+                            $color = 'warning'; // oranye
+                            break;
+                        case 'medium':
+                            $color = 'primary'; // biru
+                            break;
+                        case 'low':
+                            $color = 'secondary'; // abu
+                            break;
+                        default:
+                            return '-';
+                    }
+                    return '<span class="badge bg-' . $color . '">' . e($name) . '</span>';
                 })
                 ->addColumn('creator_name', function ($row) {
                     return $row->creator->name ?? '-';
@@ -51,7 +74,7 @@ class TicketController extends Controller
                 ->addColumn('ticket_chat', function ($row) {
                     return '<a href="' . route('ticket_chat.index', $row->id) . '" class="btn btn-sm btn-primary">Chat</a>';
                 })
-                ->rawColumns(['creator_name', 'assignee_name', 'ticketStatus_name', 'ticket_chat']) // kalau kamu ingin render HTML nanti
+                ->rawColumns(['creator_name', 'assignee_name', 'ticketStatus_name', 'ticket_chat', 'ticketPriorities_name']) // kalau kamu ingin render HTML nanti
                 ->make(true);
         }
 
@@ -107,7 +130,11 @@ class TicketController extends Controller
      */
     public function edit(Ticket $ticket)
     {
-        $ticket_status = TicketStatus::where('id', '<', 4)->get();
+        if (auth()->user()->role_id == 1) {
+            $ticket_status = TicketStatus::all();
+        } else {
+            $ticket_status = TicketStatus::where('id', '<', 4)->get();
+        }
         $priorities = TicketPriorities::all();
         $categories = TicketCategory::all();
         return view('ticket.edit', compact('ticket_status', 'ticket', 'priorities', 'categories'));
@@ -118,17 +145,42 @@ class TicketController extends Controller
      */
     public function update(Request $request, $id)
     {
-        Ticket::whereId($id)->update([
-            'ticket_status_id' => $request->ticket_status_id,
-            'ticket_priorities_id' => $request->ticket_priorities_id,
-            'ticket_category_id' => $request->ticket_category_id,
-        ]);
+        $ticket = Ticket::findOrFail($id);
+
+        // Validasi dasar: status wajib
+        $rules = [
+            'ticket_status_id' => 'required|exists:ticket_statuses,id',
+        ];
+
+        // Jika user adalah Admin, wajibkan juga priority dan category
+        if (auth()->user()->role->name === 'Admin') {
+            $rules['ticket_priorities_id'] = 'required|exists:ticket_priorities,id';
+            $rules['ticket_category_id'] = 'required|exists:ticket_categories,id';
+        }
+
+        $validated = $request->validate($rules);
+
+        // Data yang akan diupdate
+        $updateData = [
+            'ticket_status_id' => $validated['ticket_status_id'],
+        ];
+
+        // Jika admin, tambahkan data lain
+        if (auth()->user()->role->name === 'Admin') {
+            $updateData['ticket_priorities_id'] = $validated['ticket_priorities_id'];
+            $updateData['ticket_category_id'] = $validated['ticket_category_id'];
+        }
+
+        $ticket->update($updateData);
+
         ActivityLog::insert([
             'user_id' => auth()->id(),
-            'description' => "Update ticket #{$id}",
+            'description' => "Updated ticket #{$ticket->id}",
         ]);
+
         return redirect()->route('ticket.index')->with('success', 'Ticket successfully updated!');
     }
+
 
     /**
      * Remove the specified resource from storage.

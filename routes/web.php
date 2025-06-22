@@ -6,9 +6,10 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\WelcomeController;
-use App\Http\Controllers\ActivityLogController;
-use App\Http\Controllers\TicketAssignmentController;
 use App\Http\Controllers\TicketChatController;
+use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\TicketAssignmentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,3 +34,4 @@ Route::post('/ticket/assignment/{id}', [TicketAssignmentController::class, 'proc
 Route::get('/ticket_chat/{id}', [TicketChatController::class, 'index'])->name('ticket_chat.index')->middleware(['auth']);
 Route::post('/ticket_chat/{id}', [TicketChatController::class, 'process'])->name('ticket_chat.process')->middleware(['auth']);
 Route::get('/ticket_chat/data/{id}', [TicketChatController::class, 'data'])->name('ticket_chat.data');
+Route::get('/notification/{user_id}', [NotificationController::class, 'index'])->name('notification');

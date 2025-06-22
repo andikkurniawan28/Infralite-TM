@@ -52,6 +52,7 @@
                         </select>
                     </div>
 
+                    @if(Auth()->user()->role->name == 'Admin')
                     <div class="mb-3">
                         <label for="ticket_priorities_id" class="form-label">Change Priority</label>
                         <select name="ticket_priorities_id" id="ticket_priorities_id" class="form-control" required>
@@ -75,6 +76,7 @@
                             @endforeach
                         </select>
                     </div>
+                    @endif
 
                     <div class="d-flex justify-content-between">
                         <a href="{{ route('ticket.index') }}" class="btn btn-secondary">Back</a>
