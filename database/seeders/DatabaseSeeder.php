@@ -56,7 +56,7 @@ class DatabaseSeeder extends Seeder
 
         TicketStatus::insert([
             ['name' => 'Open'],
-            ['name' => 'In Progress'],
+            ['name' => 'Progress'],
             ['name' => 'Resolved'],
             ['name' => 'Closed'],
         ]);

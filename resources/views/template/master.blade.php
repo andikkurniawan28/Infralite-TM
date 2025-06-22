@@ -135,7 +135,7 @@
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light glassmorphism shadow-sm">
         <div class="container-fluid">
-            <i class="bi bi-hdd-fill me-1 fs-1"></i>
+            <i class="bi bi-ticket me-1 fs-1"></i>
             <a class="navbar-brand fw-bold" href="{{ route('welcome') }}">{{ env('APP_NAME') }}</a>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item dropdown">

@@ -18,7 +18,6 @@ class TicketController extends Controller
      */
     public function index(Request $request)
     {
-        $statuses = TicketStatus::all();
         $priorities = TicketPriorities::all();
         $categories = TicketCategory::all();
         if ($request->ajax()) {
@@ -27,7 +26,8 @@ class TicketController extends Controller
             return DataTables::of($tickets)
                 ->addIndexColumn()
                 ->addColumn('ticketStatus_name', function ($row) {
-                    return $row->ticketStatus->name ?? '-';
+                    $statusName = $row->ticketStatus->name ?? 'No Status';
+                    return '<a href="' . route('ticket.edit', $row->id) . '" class="btn btn-sm btn-primary">' . $statusName . '</a>';
                 })
                 ->addColumn('ticketCategory_name', function ($row) {
                     return $row->ticketCategory->name ?? '-';
@@ -39,16 +39,23 @@ class TicketController extends Controller
                     return $row->creator->name ?? '-';
                 })
                 ->addColumn('assignee_name', function ($row) {
-                    return $row->assignee->name ?? '-';
+                    if ($row->assignee) {
+                        return e($row->assignee->name);
+                    } else {
+                        return '<a href="' . route('ticket.assignment.index', $row->id) . '" class="btn btn-sm btn-primary">Assign</a>';
+                    }
                 })
                 ->editColumn('created_at', function ($row) {
                     return $row->created_at->format('Y-m-d H:i:s');
                 })
-                ->rawColumns(['creator_name']) // kalau kamu ingin render HTML nanti
+                ->addColumn('ticket_chat', function ($row) {
+                    return '<a href="' . route('ticket_chat.index', $row->id) . '" class="btn btn-sm btn-primary">Chat</a>';
+                })
+                ->rawColumns(['creator_name', 'assignee_name', 'ticketStatus_name', 'ticket_chat']) // kalau kamu ingin render HTML nanti
                 ->make(true);
         }
 
-        return view('ticket.index', compact('statuses', 'priorities', 'categories'));
+        return view('ticket.index', compact('priorities', 'categories'));
     }
 
     /**
@@ -67,7 +74,6 @@ class TicketController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'ticket_status_id' => 'required|exists:ticket_statuses,id',
             'ticket_priorities_id' => 'required|exists:ticket_priorities,id',
             'ticket_category_id' => 'required|exists:ticket_categories,id',
         ]);
@@ -75,14 +81,13 @@ class TicketController extends Controller
         $ticket = new Ticket();
         $ticket->title = $validated['title'];
         $ticket->description = $validated['description'];
-        $ticket->ticket_status_id = $validated['ticket_status_id'];
         $ticket->ticket_priorities_id = $validated['ticket_priorities_id'];
         $ticket->ticket_category_id = $validated['ticket_category_id'];
         $ticket->created_by = auth()->id(); // otomatis dari user login
         $ticket->save();
         ActivityLog::insert([
             'user_id' => auth()->id(),
-            'description' => "Creating ticket {$request->title}",
+            'description' => "Creating ticket #{$ticket->id}",
         ]);
 
         return redirect()->route('ticket.index')->with('success', 'Ticket successfully created!');
@@ -102,15 +107,27 @@ class TicketController extends Controller
      */
     public function edit(Ticket $ticket)
     {
-        //
+        $ticket_status = TicketStatus::where('id', '<', 4)->get();
+        $priorities = TicketPriorities::all();
+        $categories = TicketCategory::all();
+        return view('ticket.edit', compact('ticket_status', 'ticket', 'priorities', 'categories'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Ticket $ticket)
+    public function update(Request $request, $id)
     {
-        //
+        Ticket::whereId($id)->update([
+            'ticket_status_id' => $request->ticket_status_id,
+            'ticket_priorities_id' => $request->ticket_priorities_id,
+            'ticket_category_id' => $request->ticket_category_id,
+        ]);
+        ActivityLog::insert([
+            'user_id' => auth()->id(),
+            'description' => "Update ticket #{$id}",
+        ]);
+        return redirect()->route('ticket.index')->with('success', 'Ticket successfully updated!');
     }
 
     /**
@@ -119,5 +136,10 @@ class TicketController extends Controller
     public function destroy(Ticket $ticket)
     {
         //
+    }
+
+    public function __construct()
+    {
+        $this->middleware('tech')->only(['edit', 'update']);
     }
 }

@@ -32,6 +32,7 @@
                             <th>Category</th>
                             <th>Created By</th>
                             <th>Assigned To</th>
+                            <th>Chat</th>
                             <th>Created At</th>
                         </tr>
                     </thead>
@@ -61,7 +62,7 @@
                             <textarea name="description" id="description" class="form-control" rows="3" required></textarea>
                         </div>
 
-                        <div class="mb-2">
+                        {{-- <div class="mb-2">
                             <label for="ticket_status_id" class="form-label">Status</label>
                             <select name="ticket_status_id" id="ticket_status_id" class="form-control" required>
                                 <option value="" disabled selected hidden>Select Status</option>
@@ -69,7 +70,7 @@
                                     <option value="{{ $status->id }}">{{ $status->name }}</option>
                                 @endforeach
                             </select>
-                        </div>
+                        </div> --}}
 
                         <div class="mb-2">
                             <label for="ticket_priorities_id" class="form-label">Priority</label>
@@ -154,6 +155,10 @@
                     {
                         data: 'assignee_name',
                         name: 'assignee.name'
+                    },
+                    {
+                        data: 'ticket_chat',
+                        name: 'ticket_chat'
                     },
                     {
                         data: 'created_at',
